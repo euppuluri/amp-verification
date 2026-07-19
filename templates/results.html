@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Results — {{ sequence }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <p class="eyebrow">Screening result</p>
+    <h1>{{ sequence }}</h1>
+
+    <div class="sequence-strip">
+      {% for residue, css_class in residue_tiles %}
+        <div class="residue {{ css_class }}">{{ residue }}</div>
+      {% endfor %}
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--basic)"></span>Basic</span>
+      <span><span class="dot" style="background:var(--acidic)"></span>Acidic</span>
+      <span><span class="dot" style="background:var(--hydrophobic)"></span>Hydrophobic</span>
+      <span><span class="dot" style="background:var(--polar)"></span>Polar</span>
+      <span><span class="dot" style="background:var(--glycine)"></span>Glycine</span>
+    </div>
+
+    <div class="verdict {{ verdict_css_class }}">
+      <p class="verdict-label">{{ verdict.verdict.value }}</p>
+      <ul>
+        {% for reason in verdict.reasons %}
+          <li>{{ reason }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <p class="section-label">Screening results</p>
+    <table>
+      <thead>
+        <tr><th>Check</th><th>Result</th><th>Call</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AMP activity</td>
+          <td class="value">P = {{ "%.2f"|format(amp_result.probability) }}</td>
+          <td>
+            {% if amp_result.is_amp %}
+              <span class="tag good">AMP</span>
+            {% else %}
+              <span class="tag bad">Not confident</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Toxicity (ToxinPred 3.0)</td>
+          <td class="value">{{ "%.2f"|format(toxicity_result.toxicity_score) }}</td>
+          <td>
+            {% if toxicity_result.is_toxic %}
+              <span class="tag bad">Toxic</span>
+            {% else %}
+              <span class="tag good">Non-toxic</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>Predicted potency</td>
+          <td class="value">
+            {% for label, prob in potency_result.class_probabilities.items() %}
+              {{ label }}: {{ "%.2f"|format(prob) }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </td>
+          <td>
+            {% if potency_result.potency_class.value == "High" %}
+              <span class="tag good">High</span>
+            {% elif potency_result.potency_class.value == "Medium" %}
+              <span class="tag neutral">Medium</span>
+            {% else %}
+              <span class="tag bad">Low</span>
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="section-label">Physicochemical properties</p>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        {% for key, value in features.as_dict().items() %}
+          <tr>
+            <td>{{ key.replace('_', ' ') | title }}</td>
+            <td class="value">{{ value }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button class="structure-btn" id="structure-btn">Predict 3D structure (AlphaFold3)</button>
+    <div id="structure-status"></div>
+
+    <a class="back-link" href="/">&larr; Check another sequence</a>
+  </div>
+
+  <script>
+    document.getElementById('structure-btn').addEventListener('click', async () => {
+      const status = document.getElementById('structure-status');
+      status.textContent = 'Submitting structure job...';
+
+      const form = new FormData();
+      form.append('sequence', '{{ sequence }}');
+      const submitRes = await fetch('/predict/structure', { method: 'POST', body: form });
+      const { job_id } = await submitRes.json();
+
+      const poll = async () => {
+        const res = await fetch(`/predict/structure/${job_id}`);
+        const data = await res.json();
+        if (data.status === 'complete') {
+          status.textContent = 'Structure ready.';
+        } else {
+          status.textContent = `Status: ${data.status}...`;
+          setTimeout(poll, 5000);
+        }
+      };
+      poll();
+    });
+  </script>
+</body>
+</html>

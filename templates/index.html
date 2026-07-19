@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AMP Viability Checker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <p class="eyebrow">Peptide screening</p>
+    <h1>AMP Viability Checker</h1>
+    <p class="subtitle">Enter a peptide sequence to check antimicrobial activity, toxicity, and predicted potency.</p>
+
+    <div class="card">
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form action="/predict" method="post">
+        <label for="sequence">Peptide sequence</label>
+        <input type="text" id="sequence" name="sequence" maxlength="60"
+               placeholder="e.g. GIGKFLHSAKKFGKAFVGEIMNS" required>
+        <p class="hint">Single-letter amino acid codes only, 5–60 residues.</p>
+        <button type="submit">Check viability</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
