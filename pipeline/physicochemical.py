@@ -6,11 +6,12 @@ Implementation notes:
 - Everything here is a plain-Python implementation of well-established
   formulas (Kyte-Doolittle hydrophobicity, Eisenberg hydrophobic moment,
   Henderson-Hasselbalch charge, Chou-Fasman helicity propensity). No
-  external dependencies needed.
+  external dependencies needed, and it's compatible back to Python 3.9.
 """
 
 import math
 from dataclasses import dataclass
+from typing import List, Tuple
 
 # --- Reference scales (standard, widely published values) ---
 
@@ -42,15 +43,26 @@ PKA_SIDE_CHAINS = {
 N_TERM_PKA = 9.0
 C_TERM_PKA = 2.0
 
+# --- Residue classification, used for the sequence-tile visualization ---
+
+RESIDUE_CLASS = {
+    "K": "basic", "R": "basic", "H": "basic",
+    "D": "acidic", "E": "acidic",
+    "A": "hydrophobic", "V": "hydrophobic", "L": "hydrophobic", "I": "hydrophobic",
+    "M": "hydrophobic", "F": "hydrophobic", "W": "hydrophobic", "P": "hydrophobic",
+    "S": "polar", "T": "polar", "N": "polar", "Q": "polar", "Y": "polar", "C": "polar",
+    "G": "glycine",
+}
+
 
 @dataclass
 class PhysicochemicalFeatures:
     length: int
     net_charge: float
-    hydrophobicity: float
-    hydrophobic_moment: float
-    helicity_score: float
-    aggregation_propensity: float
+    hydrophobicity: float          # mean Kyte-Doolittle score
+    hydrophobic_moment: float      # amphipathicity, assuming an alpha-helix
+    helicity_score: float          # 0-1, mean normalized Chou-Fasman propensity
+    aggregation_propensity: float  # heuristic: hydrophobic-run based score
     isoelectric_point: float
 
     def as_dict(self) -> dict:
@@ -58,7 +70,9 @@ class PhysicochemicalFeatures:
 
 
 def _net_charge_at_ph(sequence: str, ph: float = 7.4) -> float:
+    """Henderson-Hasselbalch based net charge estimate."""
     charge = 0.0
+
     charge += 1 / (1 + 10 ** (ph - N_TERM_PKA))
     charge -= 1 / (1 + 10 ** (C_TERM_PKA - ph))
 
@@ -133,18 +147,8 @@ def compute_physicochemical_features(sequence: str) -> PhysicochemicalFeatures:
         aggregation_propensity=_aggregation_propensity(sequence),
         isoelectric_point=_isoelectric_point(sequence),
     )
-# --- Residue classification, used for the sequence-tile visualization ---
-
-RESIDUE_CLASS = {
-    "K": "basic", "R": "basic", "H": "basic",
-    "D": "acidic", "E": "acidic",
-    "A": "hydrophobic", "V": "hydrophobic", "L": "hydrophobic", "I": "hydrophobic",
-    "M": "hydrophobic", "F": "hydrophobic", "W": "hydrophobic", "P": "hydrophobic",
-    "S": "polar", "T": "polar", "N": "polar", "Q": "polar", "Y": "polar", "C": "polar",
-    "G": "glycine",
-}
 
 
-def classify_sequence(sequence: str) -> list[tuple[str, str]]:
+def classify_sequence(sequence: str) -> List[Tuple[str, str]]:
     """Returns [(residue, css_class), ...] for rendering colored sequence tiles."""
     return [(aa, RESIDUE_CLASS.get(aa, "polar")) for aa in sequence.upper()]

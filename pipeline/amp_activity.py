@@ -9,14 +9,22 @@ Trained offline (see train/train_amp_classifier.py) on:
 from dataclasses import dataclass
 import pickle
 from pathlib import Path
+from typing import List
+
+import pandas as pd
 
 MODEL_PATH = Path(__file__).parent.parent / "models" / "amp_classifier.pkl"
+
+FEATURE_COLS = [
+    "length", "net_charge", "hydrophobicity", "hydrophobic_moment",
+    "helicity_score", "aggregation_propensity", "isoelectric_point",
+]
 
 
 @dataclass
 class AmpActivityResult:
-    probability: float
-    is_amp: bool
+    probability: float   # 0-1
+    is_amp: bool          # thresholded at 0.5
 
 
 def _load_model():
@@ -24,7 +32,7 @@ def _load_model():
         return pickle.load(f)
 
 
-_model = None
+_model = None  # lazy-loaded singleton
 
 
 def predict_amp_probability(sequence: str, features) -> AmpActivityResult:
@@ -32,8 +40,8 @@ def predict_amp_probability(sequence: str, features) -> AmpActivityResult:
     if _model is None:
         _model = _load_model()
 
-    feature_vector = _features_to_vector(features)
-    probability = float(_model.predict_proba([feature_vector])[0][1])
+    feature_row = pd.DataFrame([_features_to_vector(features)], columns=FEATURE_COLS)
+    probability = float(_model.predict_proba(feature_row)[0][1])
 
     return AmpActivityResult(
         probability=probability,
@@ -41,7 +49,9 @@ def predict_amp_probability(sequence: str, features) -> AmpActivityResult:
     )
 
 
-def _features_to_vector(features) -> list[float]:
+def _features_to_vector(features) -> List[float]:
+    """Flatten PhysicochemicalFeatures into the exact column order the
+    trained model expects. Must stay in sync with train_amp_classifier.py."""
     return [
         features.length,
         features.net_charge,

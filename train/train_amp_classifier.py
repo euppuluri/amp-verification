@@ -1,5 +1,6 @@
 """
-Trains the binary AMP-activity classifier on CAMPR3 + CAMPR4 + APD3.
+Trains the binary AMP-activity classifier on CAMPR3 + CAMPR4 + APD3
+(positives) vs. a negative set.
 """
 
 import pickle
