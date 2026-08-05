@@ -32,7 +32,25 @@
       </ul>
     </div>
 
+    <p class="section-label">Candidacy score</p>
+    <table>
+      <thead><tr><th>Component</th><th>Contribution</th></tr></thead>
+      <tbody>
+        <tr><td>AMP activity</td><td class="value">{{ candidacy.breakdown.amp_contribution }}</td></tr>
+        <tr><td>Toxicity (inverted)</td><td class="value">{{ candidacy.breakdown.toxicity_contribution }}</td></tr>
+        <tr><td>Potency</td><td class="value">{{ candidacy.breakdown.potency_contribution }}</td></tr>
+        <tr><td>Protease stability</td><td class="value">{{ candidacy.breakdown.stability_contribution }}</td></tr>
+        <tr><td><strong>Total</strong></td><td class="value"><strong>{{ candidacy.score }}</strong></td></tr>
+      </tbody>
+    </table>
+    <p class="hint">A transparent weighted composite, not a trained model — see pipeline/candidacy.py for why.</p>
+
     <p class="section-label">Screening results</p>
+    {% if fell_back %}
+      <div class="error" style="margin-bottom: 12px;">
+        Requested "{{ requested_variant_label }}" but that model isn't trained yet -- used "{{ used_variant_label }}" instead.
+      </div>
+    {% endif %}
     <table>
       <thead>
         <tr><th>Check</th><th>Result</th><th>Call</th></tr>
@@ -61,7 +79,7 @@
           </td>
         </tr>
         <tr>
-          <td>Predicted potency</td>
+          <td>Predicted potency<br><span class="hint" style="margin:0;">via {{ used_variant_label }}</span></td>
           <td class="value">
             {% for label, prob in potency_result.class_probabilities.items() %}
               {{ label }}: {{ "%.2f"|format(prob) }}{% if not loop.last %}, {% endif %}

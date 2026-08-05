@@ -43,6 +43,18 @@ PKA_SIDE_CHAINS = {
 N_TERM_PKA = 9.0
 C_TERM_PKA = 2.0
 
+# --- Protease cleavage site rules (simplified specificity) ---
+# Trypsin: cleaves after K/R, unless followed by Proline (blocks cleavage)
+# Chymotrypsin: cleaves after F/Y/W (aromatic), unless followed by Proline
+# Elastase: cleaves after small/aliphatic A/G/V (and sometimes L), unless
+#           followed by Proline
+# This is a simplified rule set (real protease specificity is more nuanced
+# and context-dependent) but captures the dominant, well-established
+# cleavage preferences used as a standard first-pass stability heuristic.
+TRYPSIN_SITES = set("KR")
+CHYMOTRYPSIN_SITES = set("FYW")
+ELASTASE_SITES = set("AGV")
+
 # --- Residue classification, used for the sequence-tile visualization ---
 
 RESIDUE_CLASS = {
@@ -64,6 +76,7 @@ class PhysicochemicalFeatures:
     helicity_score: float          # 0-1, mean normalized Chou-Fasman propensity
     aggregation_propensity: float  # heuristic: hydrophobic-run based score
     isoelectric_point: float
+    protease_stability: float      # 0-1, higher = fewer predicted cleavage sites
 
     def as_dict(self) -> dict:
         return self.__dict__
@@ -73,16 +86,18 @@ def _net_charge_at_ph(sequence: str, ph: float = 7.4) -> float:
     """Henderson-Hasselbalch based net charge estimate."""
     charge = 0.0
 
+    # N-terminus (positive when protonated)
     charge += 1 / (1 + 10 ** (ph - N_TERM_PKA))
+    # C-terminus (negative when deprotonated)
     charge -= 1 / (1 + 10 ** (C_TERM_PKA - ph))
 
     for aa in sequence:
         if aa in ("D", "E", "C", "Y"):
             pka = PKA_SIDE_CHAINS[aa]
-            charge -= 1 / (1 + 10 ** (pka - ph))
+            charge -= 1 / (1 + 10 ** (pka - ph))  # acidic: negative when deprotonated
         elif aa in ("K", "R", "H"):
             pka = PKA_SIDE_CHAINS[aa]
-            charge += 1 / (1 + 10 ** (ph - pka))
+            charge += 1 / (1 + 10 ** (ph - pka))  # basic: positive when protonated
 
     return round(charge, 3)
 
@@ -92,6 +107,10 @@ def _hydrophobicity(sequence: str) -> float:
 
 
 def _hydrophobic_moment(sequence: str, angle_deg: float = 100.0) -> float:
+    """
+    Eisenberg hydrophobic moment, assuming an idealized alpha-helix
+    (100 degrees per residue). Higher = more amphipathic.
+    """
     angle_rad = math.radians(angle_deg)
     sum_cos, sum_sin = 0.0, 0.0
     for i, aa in enumerate(sequence):
@@ -103,12 +122,20 @@ def _hydrophobic_moment(sequence: str, angle_deg: float = 100.0) -> float:
 
 
 def _helicity_score(sequence: str) -> float:
+    """Mean Chou-Fasman helix propensity, normalized to roughly 0-1."""
     raw_mean = sum(CHOU_FASMAN_HELIX[aa] for aa in sequence) / len(sequence)
     normalized = (raw_mean - 0.5) / (1.5 - 0.5)
     return round(max(0.0, min(1.0, normalized)), 3)
 
 
 def _aggregation_propensity(sequence: str) -> float:
+    """
+    Heuristic proxy: consecutive stretches of hydrophobic, beta-sheet-prone
+    residues (I, V, F, Y, W, L) are the classic driver of aggregation.
+    Score = fraction of residues sitting inside a hydrophobic run of >= 3.
+    This is a simplification, not a substitute for a dedicated tool like
+    TANGO or AGGRESCAN — flagged here as a proxy, not a hard prediction.
+    """
     agg_prone = set("IVFYWL")
     run_length = 0
     flagged_residues = 0
@@ -124,7 +151,35 @@ def _aggregation_propensity(sequence: str) -> float:
     return round(flagged_residues / len(sequence), 3)
 
 
+def _protease_stability(sequence: str) -> float:
+    """
+    Fraction of peptide bonds NOT predicted to be protease-susceptible,
+    using simplified trypsin/chymotrypsin/elastase cleavage rules.
+    Returns 0-1, where 1.0 = no predicted cleavage sites (more stable)
+    and lower values = more predicted cleavage sites (less stable).
+
+    This is a coarse first-pass proxy, not a substitute for a dedicated
+    tool or actual serum-stability assay — flagged as a heuristic.
+    """
+    if len(sequence) < 2:
+        return 1.0
+
+    cleavage_sites = 0
+    total_bonds = len(sequence) - 1
+
+    for i in range(total_bonds):
+        residue = sequence[i]
+        next_residue = sequence[i + 1]
+        if next_residue == "P":
+            continue  # Proline blocks cleavage for all three rules
+        if residue in TRYPSIN_SITES or residue in CHYMOTRYPSIN_SITES or residue in ELASTASE_SITES:
+            cleavage_sites += 1
+
+    return round(1.0 - (cleavage_sites / total_bonds), 3)
+
+
 def _isoelectric_point(sequence: str) -> float:
+    """Binary search for the pH where net charge crosses zero."""
     low, high = 0.0, 14.0
     for _ in range(50):
         mid = (low + high) / 2
@@ -146,6 +201,7 @@ def compute_physicochemical_features(sequence: str) -> PhysicochemicalFeatures:
         helicity_score=_helicity_score(sequence),
         aggregation_propensity=_aggregation_propensity(sequence),
         isoelectric_point=_isoelectric_point(sequence),
+        protease_stability=_protease_stability(sequence),
     )
 
 

@@ -1,6 +1,8 @@
 venv/
+venv-toxinpred/
 __pycache__/
 *.pyc
 *.pkl
+models/*.txt
 data/raw/
 .DS_Store

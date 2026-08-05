@@ -1,11 +1,17 @@
 """
-Trains the binary AMP-activity classifier on CAMPR3 + CAMPR4 + APD3
-(positives) vs. a negative set.
+Trains the binary AMP-activity classifier on CAMPR3 + CAMPR4 (positives)
+vs. a negative set. APD3 is deliberately excluded — see
+data/amp_reference_loader.py and train/validate_external.py.
+
+Same homology-partitioned validation philosophy as the potency model:
+cluster before splitting so the reported accuracy isn't inflated by
+near-duplicate leakage.
 """
 
 import pickle
 from pathlib import Path
 
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 
@@ -17,16 +23,35 @@ MODEL_OUT_PATH = Path(__file__).parent.parent / "models" / "amp_classifier.pkl"
 
 FEATURE_COLS = [
     "length", "net_charge", "hydrophobicity", "hydrophobic_moment",
-    "helicity_score", "aggregation_propensity", "isoelectric_point",
+    "helicity_score", "aggregation_propensity", "isoelectric_point", "protease_stability",
 ]
 
 
 def main():
     df = build_amp_classifier_dataset()
 
-    feature_rows = [compute_physicochemical_features(s).as_dict() for s in df["sequence"]]
+    # Skip sequences with residues our feature formulas don't cover (X, B,
+    # Z, U, O, etc.) instead of letting one bad row crash the whole run —
+    # real reference databases occasionally contain these.
+    feature_rows = []
+    kept_rows = []
+    skipped = 0
+    for row in df.itertuples(index=False):
+        try:
+            feats = compute_physicochemical_features(row.sequence)
+        except KeyError:
+            skipped += 1
+            continue
+        feature_rows.append(feats.as_dict())
+        kept_rows.append(row)
+
+    if skipped:
+        print(f"Skipped {skipped} sequence(s) with non-standard residues our feature formulas don't cover.")
+
+    df = pd.DataFrame(kept_rows).reset_index(drop=True)
+    feature_df = pd.DataFrame(feature_rows)
     for col in FEATURE_COLS:
-        df[col] = [row[col] for row in feature_rows]
+        df[col] = feature_df[col]
 
     train, test = homology_partition_split(df)
 

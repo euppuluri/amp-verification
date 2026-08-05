@@ -20,7 +20,20 @@
         <label for="sequence">Peptide sequence</label>
         <input type="text" id="sequence" name="sequence" maxlength="60"
                placeholder="e.g. GIGKFLHSAKKFGKAFVGEIMNS" required>
-        <p class="hint">Single-letter amino acid codes only, 5–60 residues.</p>
+        <p class="hint">Single-letter amino acid codes only, 5-60 residues.</p>
+
+        <label for="gram_context">Score potency against</label>
+        <select id="gram_context" name="gram_context">
+          {% for variant, label in variant_options.items() %}
+            <option value="{{ variant }}" {% if variant == 'pooled' %}selected{% endif %}>
+              {{ label }}{% if not variant_availability[variant] %} (not trained yet -- will use pooled){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="hint">Gram-specific models avoid mixing intrinsically easier- and
+          harder-to-kill organisms into one potency label. If a variant hasn't been
+          trained yet, the pooled model is used automatically.</p>
+
         <button type="submit">Check viability</button>
       </form>
     </div>

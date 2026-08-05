@@ -97,6 +97,24 @@ input[type="text"]:focus {
   box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.15);
 }
 
+select {
+  width: 100%;
+  padding: 14px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.15);
+}
+
 .hint {
   font-size: 13px;
   color: var(--muted);
@@ -126,7 +144,6 @@ button:hover { background: var(--accent-dark); }
   margin-bottom: 20px;
 }
 
-/* --- Sequence tiles --- */
 .sequence-strip {
   display: flex;
   flex-wrap: wrap;
@@ -163,12 +180,8 @@ button:hover { background: var(--accent-dark); }
 }
 
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
-.legend .dot {
-  width: 10px; height: 10px; border-radius: 3px; display: inline-block;
-}
-
-/* --- Verdict banner --- */
 .verdict {
   border-radius: 10px;
   padding: 20px 24px;
@@ -193,7 +206,6 @@ button:hover { background: var(--accent-dark); }
 .verdict ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink); }
 .verdict li { margin-bottom: 4px; }
 
-/* --- Results table --- */
 .section-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;

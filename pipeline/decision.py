@@ -25,7 +25,7 @@ class Verdict(str, Enum):
 @dataclass
 class VerdictResult:
     verdict: Verdict
-    reasons: list[str]
+    reasons: list
 
 
 def make_viability_verdict(

@@ -21,6 +21,8 @@ def _random_sequence(length: int, alphabet: str = AMINO_ACIDS) -> str:
 
 
 def generate_mic_csvs(n_peptides: int = 500):
+    """Fake data matching GRAMPA's real schema (bacterium,sequence,strain,value)
+    and a placeholder DBAASP-style schema."""
     grampa_rows = ["bacterium,sequence,strain,value"]
     dbaasp_rows = ["SEQUENCE,MIC_VALUE,TARGET"]
 
@@ -40,6 +42,8 @@ def generate_mic_csvs(n_peptides: int = 500):
 
 
 def generate_amp_reference_fastas(n_positive: int = 300, n_negative: int = 300):
+    """Fake CAMPR3/CAMPR4/APD3 positives + a negative set."""
+
     def write_fasta(path, sequences, prefix):
         lines = []
         for i, seq in enumerate(sequences):

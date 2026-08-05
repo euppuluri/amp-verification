@@ -2,8 +2,10 @@
 Predicts P(sequence is an antimicrobial peptide).
 
 Trained offline (see train/train_amp_classifier.py) on:
-  - positives: CAMPR3 + CAMPR4 known AMPs, APD3 validated AMPs
+  - positives: CAMPR3 + CAMPR4 known AMPs
   - negatives: non-AMP peptides / random UniProt fragments
+APD3 is intentionally NOT used for training — see data/amp_reference_loader.py
+and train/validate_external.py.
 """
 
 from dataclasses import dataclass
@@ -17,7 +19,7 @@ MODEL_PATH = Path(__file__).parent.parent / "models" / "amp_classifier.pkl"
 
 FEATURE_COLS = [
     "length", "net_charge", "hydrophobicity", "hydrophobic_moment",
-    "helicity_score", "aggregation_propensity", "isoelectric_point",
+    "helicity_score", "aggregation_propensity", "isoelectric_point", "protease_stability",
 ]
 
 
@@ -60,4 +62,5 @@ def _features_to_vector(features) -> List[float]:
         features.helicity_score,
         features.aggregation_propensity,
         features.isoelectric_point,
+        features.protease_stability,
     ]

@@ -2,4 +2,4 @@ flask
 pandas
 numpy
 scikit-learn
-toxinpred3
+requests
