@@ -10,10 +10,12 @@ near-duplicate leakage.
 
 import pickle
 from pathlib import Path
+from pyexpat import model
 
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
 from data.amp_reference_loader import build_amp_classifier_dataset
 from pipeline.physicochemical import compute_physicochemical_features
@@ -60,7 +62,8 @@ def main():
 
     model = RandomForestClassifier(n_estimators=300, random_state=42)
 
-    cv_scores = cross_val_score(model, X_train, y_train, cv=5)
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(model, X_train, y_train, cv=cv)
     print(f"CV accuracy: {cv_scores.mean():.3f} +/- {cv_scores.std():.3f}")
 
     model.fit(X_train, y_train)
