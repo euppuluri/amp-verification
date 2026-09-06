@@ -1,0 +1,9 @@
+feature_removed,auroc_without_feature,auroc_drop
+net_charge,0.9317,0.0153
+length,0.9353,0.0117
+hydrophobicity,0.9407,0.0063
+isoelectric_point,0.9411,0.0059
+helicity_score,0.9414,0.0056
+aggregation_propensity,0.9447,0.0023
+hydrophobic_moment,0.9465,0.0005
+protease_stability,0.9469,0.0001

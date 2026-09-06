@@ -1,0 +1,8 @@
+peptide,source,sequence,length,net_charge,hydrophobicity,hydrophobic_moment,helicity_score,protease_stability,amp_probability,toxicity_score,potency_class,candidacy_score,single_tool_verdict,integrated_verdict
+LL-37,Reference (literature),LLGDFFRKSKEKIGKEFKRIVQRIKDFLRNLVPRTES,37,5.97,-0.724,0.559,0.554,0.5,0.997,0.0,Medium,0.814,Promising,Borderline — needs closer review
+Temporin_A,Reference (literature),FLPLIGRVLSGIL,13,0.97,1.808,0.581,0.473,0.583,0.99,0.5,High,0.794,Promising,Not viable
+Your_Candidate,Your design,IKLRVKWRIKLRVKWREKLRIKWR,24,10.97,-0.971,0.119,0.608,0.304,0.963,0.005,Low,0.766,Promising,Not viable
+Magainin_2,Reference (literature),GIGKFLHSAKKFGKAFVGEIMNS,23,3.01,0.083,0.455,0.533,0.364,1.0,0.5,High,0.715,Promising,Not viable
+Melittin,Reference (literature),GIGAVLKVLTTGLPALISWIKRKRQQ,26,4.97,0.273,0.353,0.519,0.48,1.0,0.32,Low,0.683,Promising,Not viable
+Pexiganan_MSI-78,Reference (literature),GIGKFLKKAKKFGKAFVKILKK,22,8.97,-0.159,0.704,0.592,0.19,1.0,0.345,Low,0.56,Promising,Not viable
+Aurein_1.2,Reference (literature),GLFDIIKKIAESF,13,-0.03,0.669,0.667,0.601,0.583,0.893,0.5,Low,0.5,Promising,Not viable

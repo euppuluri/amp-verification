@@ -1,0 +1,6 @@
+suggestion_rank,sequence,mutation,original_potency,new_potency,new_amp_probability,improvement_score
+1,IKLRVKWRIKLRVKWRRKLRIKWR,Increased net charge: position 17 E->R,Low,High,0.99,4.476
+2,IKLRVKWRIKLRVKRREKLRIKWR,Increased net charge: position 15 W->R,Low,High,0.977,4.423
+3,IKLRVKWRIKLRVKKREKLRIKWR,Increased net charge: position 15 W->K,Low,High,0.977,4.377
+4,IKLRVKWRIKLRVKWREKRRIKWR,Increased net charge: position 19 L->R,Low,High,0.99,4.294
+5,RKLRVKWRIKLRVKWREKLRIKWR,Increased net charge: position 1 I->R,Low,High,0.99,4.292

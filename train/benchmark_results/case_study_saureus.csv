@@ -1,0 +1,8 @@
+peptide,source,length,net_charge,amp_probability,toxicity_score,potency_class (Gram+),candidacy_score,single_tool_verdict (AMP prob. only),integrated_verdict
+LL-37,Reference (literature),37,5.973,0.997,0.0,Medium,0.814,Promising,Borderline — needs closer review
+Temporin_A,Reference (literature),13,0.975,0.99,0.5,High,0.794,Promising,Not viable
+Designed_1,Your design,24,10.971,0.963,0.005,Low,0.766,Promising,Not viable
+Magainin_2,Reference (literature),23,3.011,1.0,0.5,High,0.715,Promising,Not viable
+Melittin,Reference (literature),26,4.973,1.0,0.32,Low,0.683,Promising,Not viable
+Pexiganan_MSI-78,Reference (literature),22,8.968,1.0,0.345,Low,0.56,Promising,Not viable
+Aurein_1.2,Reference (literature),13,-0.025,0.893,0.5,Low,0.5,Promising,Not viable

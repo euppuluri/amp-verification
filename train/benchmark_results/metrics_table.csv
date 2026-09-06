@@ -1,0 +1,4 @@
+model,AUROC,AUPRC,F1,MCC,AUROC_ci_low,AUPRC_ci_low,F1_ci_low,MCC_ci_low,AUROC_ci_high,AUPRC_ci_high,F1_ci_high,MCC_ci_high
+Charge heuristic (net_charge >= 0.89),0.8276,0.9052,0.861,0.4931,0.8124,0.892,0.8513,0.4614,0.843,0.9189,0.8707,0.5251
+Best single feature (net_charge),0.8276,0.9052,0.8642,0.4231,0.8124,0.892,0.8548,0.3887,0.843,0.9189,0.8734,0.4537
+Integrated pipeline (all 8 features),0.947,0.9785,0.9194,0.7133,0.9393,0.975,0.9115,0.6872,0.9536,0.9818,0.9271,0.738
